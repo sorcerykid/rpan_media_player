@@ -1,0 +1,317 @@
+<html>
+<!--
+  RPAN Media Player for Windows v1.0
+  Copyright(c) 2022, Leslie E. Krause
+
+  Licensed under The MIT License.
+  https://opensource.org/licenses/MIT
+-->
+
+<head>
+<meta http-equiv="x-ua-compatible" content="ie=11" />
+<title>RPAN Media Player</title>
+<HTA:APPLICATION ID="rpan_media_player"
+	APPLICATIONNAME="RPAN Media Player"
+	BORDER="dialog"
+	BORDERSTYLE="normal"
+	CAPTION="yes"
+	ICON=""
+	MAXIMIZEBUTTON="no"
+	MINIMIZEBUTTON="yes"
+	SHOWINTASKBAR="yes"
+	SINGLEINSTANCE="yes"
+	SYSMENU="yes"
+	VERSION="1.0"
+	WINDOWSTATE="normal" />
+
+<!-- // http://www.pixeden.com/icon-fonts/stroke-7-icon-font-set -->
+<style>
+@font-face {
+	font-family: 'Pe-icon-7-stroke';
+	src:url('fonts/pe-icon-7-stroke.eot?d7yf1v');
+	src:url('fonts/pe-icon-7-stroke.eot?#iefixd7yf1v') format('embedded-opentype'),
+		url('fonts/pe-icon-7-stroke.woff?d7yf1v') format('woff'),
+		url('fonts/pe-icon-7-stroke.ttf?d7yf1v') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+BODY {
+	margin: 0px;
+	xoverflow: hidden;  /** disable window scrollbars */
+	background-color: #222222;
+}
+
+DIV {
+	box-sizing: border-box;  /** enforce saner layouts */
+}
+
+#welcome {
+	left: 0px;
+	top: 0px;
+	height: 100vh;
+	width: 100vw;
+	position: absolute; // needed to overlay video element
+}
+
+#welcome H3 {
+	font-family: segoe ui black;
+	font-size: 26px;
+	color: #ffffff;
+}
+
+#welcome P {
+	font-family: calibri;
+	font-size: 16px;
+	color: #ffffff;
+}
+
+#content {
+	left: 0px;
+	top: 0px;
+	height: 100vh;
+	width: 100vw;
+	display: none;
+	position: absolute; // needed to overlay video element
+}
+
+#player {
+	width: 56vh;
+	min-width: 56vh;
+	height: 100%;
+	background-color: rgba(0,0,0,0.0);
+	transition: 0.5s all;
+}
+
+#viewer {
+	width: 100%;
+	height: 100%;
+}
+
+#overview {
+	margin-bottom: 40px;
+	color: #ffffff;
+	opacity: 0.0;
+	transition: 0.5s all;
+}
+
+#viewer IMG {
+	border-radius: 8px;
+	margin-left: -54px;
+}
+
+#viewer DL {
+	font-family: calibri;
+	font-size: 16px;
+	line-height: 20px;
+	color: #ffffff;
+}
+
+#viewer SMALL {
+	font-size: 14px;
+}
+
+#viewer BIG {
+	font-size: 18px;
+}
+
+#viewer DT {
+	margin-left: 56px;
+	//margin-bottom: 2px;
+	margin-top: 0px;
+}
+
+#viewer DD {
+	margin-left: 56px;
+	margin-top: 0px;
+	margin-bottom: 10px;
+}
+
+#viewer LI {
+	margin-left: 24px;
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+#controls {
+	margin-bottom: 80px;
+	border-radius: 42px;
+	color: #aaaaaa;
+	opacity: 0.0;
+	cursor: pointer;
+	background-color: rgba(0,0,0,0.6);
+	transition: 0.5s all;
+}
+
+#progress {
+	margin-bottom: 10px;
+	border-radius: 15px;
+	color: #aaaaaa;
+	opacity: 0.4;
+	cursor: pointer;
+	background-color: rgba(0,0,0,0.6);
+	transition: 0.5s all;
+}
+
+#player:hover {
+	background-color: rgba(0,0,0,0.3);
+}
+
+#player:hover #overview, #player:hover #progress, #player:hover #controls {
+	opacity: 1.0;
+}
+
+#progress A:hover, #controls A:hover {
+	color: #ffffff;
+}
+
+#c_prev, #c_next, #c_mute {
+	font-family: pe-icon-7-stroke;
+	font-weight: 900;
+	font-size: 28px;
+}
+
+#c_play {
+	font-family: pe-icon-7-stroke;
+	font-weight: 900;
+	font-size: 48px;
+}
+
+#p_timer1, #p_timer2 {
+	font-family: calibri;
+	font-size: 16px;
+	font-weight: bold;
+}
+
+#p_gauge2 {
+	width: 5%;
+	height: 8px;
+	border-radius: 3px;
+	background-color: #aaaaaa;
+}
+
+#p_gauge1 {
+	width: 100%;
+	height: 8px;
+	border-radius: 3px;
+	background-color: #666666;
+}
+
+#o_show_state {
+	width: 110px;
+	padding: 3px;
+	border-radius: 6px;
+	background-color: #bb6600;
+	font-family: calibri;
+	font-size: 14px;
+	font-weight: bold;
+	text-align: center;
+}
+
+#o_show_title {
+	margin-top: 3px;
+	font-family: segoe ui black;
+	font-size: 26px;
+	line-height: 28px;
+	letter-spacing: -0.02em;
+}
+
+#o_subreddit {
+	margin-top: 3px;
+	font-family: calibri;
+	font-size: 14px;
+}
+
+#video {
+	display: none;
+	height: 100vh;
+	margin-bottom: -10px;  /* hack to prevent auto-scroll moving page up *
+}
+</style>
+<script src="lib/format.js"></script>
+<script src="lib/videoplayer.js"></script>
+<script src="lib/chatreplay.js"></script>
+
+<script>
+const fs = new ActiveXObject( 'Scripting.FileSystemObject' );
+const wsh_shell = new ActiveXObject( 'Wscript.Shell' );
+
+function onDropFile( e )
+{
+	let mp4_filespec = e.target.value;
+	let json_filespec = e.target.value.replace( /\.mp4$/, '.json' );
+	
+	if( mp4_filespec.indexOf( '.mp4' ) == -1 ) {
+		alert( 'Only MP4 files are supported.' );
+		return;
+	}
+	else if( !fs.FileExists( json_filespec ) ) {
+		alert( 'JSON file must be in same directory.' );
+		return;
+	}
+	
+	video_player.load( mp4_filespec );
+	chat_replay.load( json_filespec );
+	welcome.style.display = 'none';
+	content.style.display = 'block';
+}
+
+window.resizeTo( 850, 600 );
+window.moveTo( 10, 10 );
+</script>
+</head>
+
+<body link="#DDAA44" vlink="#DDAA44" alink="white">
+
+<video id="video">
+<source type="video/mp4" />
+</video>
+
+<table id="welcome" cellpadding="0" cellspacing="0">
+<tr><td align="center" valign="middle">
+	<div style="font-family: pe-icon-7-stroke; font-weight: bold; font-size: 128px; color: #ddaa44;">&#xe6a5;</div>
+	<h3>RPAN Media Player</h3>
+	<p>Version 1.0</p>
+	<p><b>Select a video file to open:</b></p>
+	<p><input type="file" id="file-selector" onChange="onDropFile( event );"></p>
+</td></tr>
+</table>
+
+<table id="content" cellpadding="0" cellspacing="0">
+<tr><td id="player" align="center" valign="bottom"><div style="padding: 12px; padding-bottom: 6px;">
+	<table id="controls" width="50%" cellpadding="0" cellspacing="12">
+	<tr align="center" valign="middle">
+		<td><a id="c_prev" title="Skip backward 10 seconds" onClick="video_player.scan( -10 );">&#xe620;</a></td>
+		<td><a id="c_play" title="Pause or resume playback" onClick="video_player.play( );">&#xe624;</a></td>
+		<td><a id="c_next" title="Skip forward 10 seconds"onClick="video_player.scan( 10 );">&#xe62d;</a></td>
+	</tr>
+	</table>
+	<table id="overview" width="100%" cellpadding="0" cellpadding="4">
+	<tr>
+		<td width="80">
+		<div id="o_show_state">RECORDED LIVE</div>
+		<div id="o_show_title"></div>
+		<div id="o_subreddit"></div>
+		</td>
+	</tr>
+	</table>
+	<table id="progress" width="100%" cellpadding="0" cellspacing="4">
+	<tr align="center">
+		<td width="70" id="p_timer1"></td>
+		<td align="left"><div id="p_gauge1" onClick="video_player.jump( event );"><div id="p_gauge2"></div></div></td>
+		<td width="70" id="p_timer2"></td>
+	</tr>
+	</table>
+</div></td>
+<td id="viewer" align="left" valign="top"><div style="padding: 12px; height: 100vh; overflow-y: scroll;">
+	<dl id="panel" style="margin-top: 0px;"></dl>
+</td></tr>
+</table>
+
+<script>
+var video_player = new VideoPlayer( 'video', 'c_play', 'p_gauge2', 'p_timer1', 'p_timer2' );
+var chat_replay = new ChatReplay( video_player, 'panel', 'o_show_title', 'o_subreddit' );
+</script>
+
+</body>
+</html>
