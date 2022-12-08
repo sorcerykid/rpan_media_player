@@ -1,6 +1,6 @@
 <html>
 <!--
-  RPAN Media Player for Windows v1.0
+  RPAN Media Player for Windows v1.1
   Copyright(c) 2022, Leslie E. Krause
 
   Licensed under The MIT License.
@@ -38,7 +38,7 @@
 
 BODY {
 	margin: 0px;
-	xoverflow: hidden;  /** disable window scrollbars */
+	overflow: hidden;  /** disable window scrollbars */
 	background-color: #222222;
 }
 
@@ -51,7 +51,7 @@ DIV {
 	top: 0px;
 	height: 100vh;
 	width: 100vw;
-	position: absolute; // needed to overlay video element
+	position: absolute;  /* needed to overlay video element */
 }
 
 #welcome H3 {
@@ -72,7 +72,7 @@ DIV {
 	height: 100vh;
 	width: 100vw;
 	display: none;
-	position: absolute; // needed to overlay video element
+	position: absolute;  /* needed to overlay video element */
 }
 
 #player {
@@ -115,9 +115,17 @@ DIV {
 	font-size: 18px;
 }
 
+#viewer STRONG {
+	font-size: 14px;
+	background-color: #bb6600;
+	border-radius: 3px;
+	padding-left: 5px;
+	padding-right: 5px;
+	display: inline-block;  /** preserve background below baseline */
+}
+
 #viewer DT {
 	margin-left: 56px;
-	//margin-bottom: 2px;
 	margin-top: 0px;
 }
 
@@ -234,7 +242,7 @@ DIV {
 
 <script>
 const fs = new ActiveXObject( 'Scripting.FileSystemObject' );
-const wsh_shell = new ActiveXObject( 'Wscript.Shell' );
+//const wsh_shell = new ActiveXObject( 'Wscript.Shell' );
 
 function onDropFile( e )
 {
@@ -271,7 +279,7 @@ window.moveTo( 10, 10 );
 <tr><td align="center" valign="middle">
 	<div style="font-family: pe-icon-7-stroke; font-weight: bold; font-size: 128px; color: #ddaa44;">&#xe6a5;</div>
 	<h3>RPAN Media Player</h3>
-	<p>Version 1.0</p>
+	<p>Version 1.1</p>
 	<p><b>Select a video file to open:</b></p>
 	<p><input type="file" id="file-selector" onChange="onDropFile( event );"></p>
 </td></tr>
@@ -283,7 +291,7 @@ window.moveTo( 10, 10 );
 	<tr align="center" valign="middle">
 		<td><a id="c_prev" title="Skip backward 10 seconds" onClick="video_player.scan( -10 );">&#xe620;</a></td>
 		<td><a id="c_play" title="Pause or resume playback" onClick="video_player.play( );">&#xe624;</a></td>
-		<td><a id="c_next" title="Skip forward 10 seconds"onClick="video_player.scan( 10 );">&#xe62d;</a></td>
+		<td><a id="c_next" title="Skip forward 10 seconds" onClick="video_player.scan( 10 );">&#xe62d;</a></td>
 	</tr>
 	</table>
 	<table id="overview" width="100%" cellpadding="0" cellpadding="4">
@@ -304,6 +312,7 @@ window.moveTo( 10, 10 );
 	</table>
 </div></td>
 <td id="viewer" align="left" valign="top"><div style="padding: 12px; height: 100vh; overflow-y: scroll;">
+	<!-- todo: fix so long lines don't widen table beyond viewport width?! -->
 	<dl id="panel" style="margin-top: 0px;"></dl>
 </td></tr>
 </table>
