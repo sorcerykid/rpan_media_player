@@ -1,4 +1,4 @@
-RPAN Media Player v1.1
+RPAN Media Player v1.2
 By Leslie E. Krause
 
 RPAN Media Player is a Windows application that makes it possible to watch RPAN videos 
