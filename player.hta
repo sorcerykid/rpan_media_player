@@ -1,6 +1,6 @@
 <html>
 <!--
-  RPAN Media Player for Windows v1.2
+  RPAN Media Player for Windows v1.3
   Copyright(c) 2022, Leslie E. Krause
 
   Licensed under The MIT License.
@@ -47,11 +47,8 @@ DIV {
 }
 
 #welcome {
-	left: 0px;
-	top: 0px;
 	height: 100vh;
 	width: 100vw;
-	position: absolute;  /* needed to overlay video element */
 }
 
 #welcome H3 {
@@ -78,26 +75,42 @@ DIV {
 #player {
 	width: 56vh;
 	min-width: 56vh;
-	height: 100%;
+	height: 100vh;
 	background-color: rgba(0,0,0,0.0);
 	transition: 0.5s all;
 }
 
 #viewer {
 	width: 100%;
-	height: 100%;
+	height: 100vh;
+}
+
+#viewer H2 {
+	font-family: segoe ui black;
+	font-size: 18px;
+	color: #afafaf;
+	background-color: #484848;
+	height: 25px;
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+#viewer ARTICLE {
+	font-family: calibri;
+	font-size: 16px;
+	color: #ffffff;
+	padding: 12px;
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+	top: 25px;
+	overflow-y: scroll;
+	position: absolute;
 }
 
 #viewer IMG {
 	border-radius: 8px;
 	margin-left: -54px;
-}
-
-#viewer DL {
-	font-family: calibri;
-	font-size: 16px;
-	line-height: 20px;
-	color: #ffffff;
 }
 
 #viewer SMALL {
@@ -117,6 +130,12 @@ DIV {
 	display: inline-block;  /** preserve background below baseline */
 }
 
+#viewer DL {
+	line-height: 20px;
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
 #viewer DT {
 	margin-left: 56px;
 	margin-top: 0px;
@@ -132,6 +151,11 @@ DIV {
 	margin-left: 24px;
 	margin-top: 0px;
 	margin-bottom: 0px;
+}
+
+#chat_panel {
+	height: 100%;
+	position: relative;  /* needed for full-height scrollbars */
 }
 
 #video_controls {
@@ -256,7 +280,7 @@ DIV {
 #video {
 	display: none;
 	height: 100vh;
-	margin-bottom: -10px;  /* hack to prevent auto-scroll moving page up *
+	margin-bottom: -10px;  /* hack to prevent auto-scroll moving page up */
 }
 </style>
 <script src="lib/format.js"></script>
@@ -264,10 +288,10 @@ DIV {
 <script src="lib/chatreplay.js"></script>
 
 <script>
+var app = { name: "RPAN Media Player", version: "1.3" };
 const fs = new ActiveXObject( 'Scripting.FileSystemObject' );
-//const wsh_shell = new ActiveXObject( 'Wscript.Shell' );
 
-function onDropFile( e )
+app.onSelectFile = function ( e )
 {
 	let mp4_filespec = e.target.value;
 	let json_filespec = e.target.value.replace( /\.mp4$/, '.json' );
@@ -302,9 +326,9 @@ window.moveTo( 10, 10 );
 <tr><td align="center" valign="middle">
 	<div style="font-family: pe-icon-7-stroke; font-weight: bold; font-size: 128px; color: #ddaa44;">&#xe6a5;</div>
 	<h3>RPAN Media Player</h3>
-	<p>Version 1.2</p>
+	<p>Version 1.3</p>
 	<p><b>Select a video file to open:</b></p>
-	<p><input type="file" id="file-selector" onChange="onDropFile( event );"></p>
+	<p><input type="file" id="file-selector" onChange="app.onSelectFile( event );"></p>
 </td></tr>
 </table>
 
@@ -344,15 +368,17 @@ window.moveTo( 10, 10 );
 	</tr>
 	</table>
 </div></td>
-<td id="viewer" align="left" valign="top"><div style="padding: 12px; height: 100vh; overflow-y: scroll;">
-	<!-- todo: fix so long lines don't widen table beyond viewport width?! -->
-	<dl id="panel" style="margin-top: 0px;"></dl>
+<td id="viewer" align="left" valign="top">
+	<div id="chat_panel">
+		<h2 align="center">CHAT REPLAY</h2>
+		<article id="chat_block">%s</article>
+	</div>
 </td></tr>
 </table>
 
 <script>
 var video_player = new VideoPlayer( 'video', 'c_play', 's_gauge2', 's_mute', 's_state', 'p_gauge2', 'p_timer1', 'p_timer2' );
-var chat_replay = new ChatReplay( video_player, 'panel', 'o_show_title', 'o_subreddit' );
+var chat_replay = new ChatReplay( video_player, 'chat_block', 'o_show_title', 'o_subreddit' );
 </script>
 
 </body>
