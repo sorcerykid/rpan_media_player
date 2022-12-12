@@ -1,6 +1,6 @@
 <html>
 <!--
-  RPAN Media Player for Windows v1.3
+  RPAN Media Player for Windows v1.4
   Copyright(c) 2022, Leslie E. Krause
 
   Licensed under The MIT License.
@@ -130,6 +130,12 @@ DIV {
 	display: inline-block;  /** preserve background below baseline */
 }
 
+#viewer TH {
+	font-size: 20px;
+	color: #242424;
+	background-color: #808080;
+}
+
 #viewer DL {
 	line-height: 20px;
 	margin-top: 0px;
@@ -153,7 +159,7 @@ DIV {
 	margin-bottom: 0px;
 }
 
-#chat_panel {
+#chat_panel, #info_panel {
 	height: 100%;
 	position: relative;  /* needed for full-height scrollbars */
 }
@@ -207,7 +213,7 @@ DIV {
 	color: #ffffff;
 }
 
-#c_prev, #c_next {
+#c_prev, #c_next, #c_exit, #c_info {
 	font-family: pe-icon-7-stroke;
 	font-weight: bold;
 	font-size: 26px;
@@ -280,16 +286,33 @@ DIV {
 #video {
 	display: none;
 	height: 100vh;
-	margin-bottom: -10px;  /* hack to prevent auto-scroll moving page up */
 }
 </style>
 <script src="lib/format.js"></script>
 <script src="lib/videoplayer.js"></script>
 <script src="lib/chatreplay.js"></script>
+<script src="lib/showreport.js"></script>
 
 <script>
-var app = { name: "RPAN Media Player", version: "1.3" };
+var app = { name: "RPAN Media Player", version: "1.4" };
 const fs = new ActiveXObject( 'Scripting.FileSystemObject' );
+
+app.onClickExit = function ( )
+{
+	window.close( );
+}
+
+app.onClickInfo = function ( )
+{
+	if( chat_panel_elem.style.display == 'block' ) {
+		chat_panel_elem.style.display = 'none';
+		info_panel_elem.style.display = 'block';
+	}
+	else {
+		chat_panel_elem.style.display = 'block';
+		info_panel_elem.style.display = 'none';
+	}
+}
 
 app.onSelectFile = function ( e )
 {
@@ -307,8 +330,10 @@ app.onSelectFile = function ( e )
 	
 	video_player.load( mp4_filespec );
 	chat_replay.load( json_filespec );
-	welcome.style.display = 'none';
-	content.style.display = 'block';
+	welcome_elem.style.display = 'none';
+	content_elem.style.display = 'block';
+	chat_panel_elem.style.display = 'block';
+	info_panel_elem.style.display = 'none';
 }
 
 window.resizeTo( 850, 600 );
@@ -326,7 +351,7 @@ window.moveTo( 10, 10 );
 <tr><td align="center" valign="middle">
 	<div style="font-family: pe-icon-7-stroke; font-weight: bold; font-size: 128px; color: #ddaa44;">&#xe6a5;</div>
 	<h3>RPAN Media Player</h3>
-	<p>Version 1.3</p>
+	<p>Version 1.4</p>
 	<p><b>Select a video file to open:</b></p>
 	<p><input type="file" id="file-selector" onChange="app.onSelectFile( event );"></p>
 </td></tr>
@@ -334,19 +359,21 @@ window.moveTo( 10, 10 );
 
 <table id="content" cellpadding="0" cellspacing="0">
 <tr><td id="player" align="center" valign="bottom"><div style="padding: 12px; padding-bottom: 6px;">
-	<table id="video_controls" width="50%" cellpadding="0" cellspacing="8">
+	<table id="video_controls" width="80%" cellpadding="0" cellspacing="8">
 	<tr align="center" valign="middle">
+		<td><a id="c_exit" title="Exit media player" onClick="app.onClickExit( );">&nbsp;&#xe681;</a></td>
 		<td><a id="c_prev" title="Skip backward 10 seconds" onClick="video_player.scan( -10 );">&#xe620;</a></td>
 		<td><a id="c_play" title="Pause or resume playback" onClick="video_player.play( );">&#xe624;</a></td>
 		<td><a id="c_next" title="Skip forward 10 seconds" onClick="video_player.scan( 10 );">&#xe62d;</a></td>
+		<td><a id="c_info" title="View show report" onClick="app.onClickInfo( );">&#xe647;&nbsp;</a></td>
 	</tr>
 	</table>
 	
 	<table id="audio_settings" width="70%" cellpadding="0" cellspacing="4">
 	<tr align="center" valign="middle">
-		<td width="40"><a id="s_mute" onClick="video_player.audio.mute( );">&#xe692;</a></td>
-		<td align="left"><div id="s_gauge1" onClick="video_player.audio.fade( event );"><div id="s_gauge2"></div></div></td>
-		<td width="45"><a id="s_state">100</a></td>
+		<td width="40" title="Mute or unmute"><a id="s_mute" onClick="video_player.audio.mute( );">&#xe692;</a></td>
+		<td align="left" title="Adjust volume"><div id="s_gauge1" onClick="video_player.audio.fade( event );"><div id="s_gauge2"></div></div></td>
+		<td width="45" title="Volume setting"><a id="s_state">100</a></td>
 	</tr>
 	</table>
 
@@ -362,16 +389,20 @@ window.moveTo( 10, 10 );
 
 	<table id="progress" width="100%" cellpadding="0" cellspacing="4">
 	<tr align="center">
-		<td width="70" id="p_timer1"></td>
+		<td width="70" id="p_timer1">0:00:00</td>
 		<td align="left"><div id="p_gauge1" onClick="video_player.jump( event );"><div id="p_gauge2"></div></div></td>
-		<td width="70" id="p_timer2"></td>
+		<td width="70" id="p_timer2">0:00:00</td>
 	</tr>
 	</table>
 </div></td>
 <td id="viewer" align="left" valign="top">
+	<div id="info_panel">
+		<h2 align="center">SHOW REPORT</h2>
+		<article id="info_block"></article>
+	</div>
 	<div id="chat_panel">
 		<h2 align="center">CHAT REPLAY</h2>
-		<article id="chat_block">%s</article>
+		<article id="chat_block"></article>
 	</div>
 </td></tr>
 </table>
@@ -379,6 +410,11 @@ window.moveTo( 10, 10 );
 <script>
 var video_player = new VideoPlayer( 'video', 'c_play', 's_gauge2', 's_mute', 's_state', 'p_gauge2', 'p_timer1', 'p_timer2' );
 var chat_replay = new ChatReplay( video_player, 'chat_block', 'o_show_title', 'o_subreddit' );
+var show_report = new ShowReport( chat_replay, 'info_block' );
+var welcome_elem = document.getElementById( 'welcome' );
+var content_elem = document.getElementById( 'content' );
+var info_panel_elem = document.getElementById( 'info_panel' );
+var chat_panel_elem = document.getElementById( 'chat_panel' );
 </script>
 
 </body>
